@@ -5,7 +5,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 class DenoisingCNN(nn.Module):
-    def __init__(self, channels=1, num_layers=5):
+    def __init__(self,  num_layers, channels=1):
         super(DenoisingCNN, self).__init__()
         # define the layers in this function. taken from https://arxiv.org/pdf/1608.03981
         self.num_layers = num_layers
