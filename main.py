@@ -6,6 +6,8 @@ from tqdm import tqdm
 import test
 import train
 
+# some inspiration from https://github.com/SaoYan/DnCNN-PyTorch
+
 # data 
 noisy_path = "./data/noisy_images"
 denoised_path = "./data/denoised_images"
