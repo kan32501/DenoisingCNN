@@ -2,10 +2,10 @@
 import torch
 import torch.nn as nn
 from data import OCRDataset
-from torch import DataLoader
+from torch.utils.data import DataLoader
 
 # test the model
-def test_epoch(device, model, dataloader, criterion, visualize=False):
+def test_epoch(device, model, dataloader, criterion):
     # set model to evaluation mode
     model.eval()
 
@@ -17,7 +17,7 @@ def test_epoch(device, model, dataloader, criterion, visualize=False):
         # compare prediction & target for each data pair
         for batch_no, (noisy, denoised) in enumerate(dataloader):
             # send tensors to GPU
-            noisy, denoised = noisy.to(device), denoise.to(device)
+            noisy, denoised = noisy.to(device), denoised.to(device)
 
             # get model prediction
             pred_denoised = model(noisy)
@@ -29,4 +29,6 @@ def test_epoch(device, model, dataloader, criterion, visualize=False):
             total_loss += loss 
 
     # normalize the loss with the number of batches
-    total_loss /= len(dataloader)
+    test_loss = total_loss / len(dataloader)
+
+    return test_loss

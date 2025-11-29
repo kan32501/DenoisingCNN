@@ -1,34 +1,17 @@
 # test that the dataset can be loaded
+import torch
 from torchvision import transforms
+from torch.utils.data import DataLoader
+import torch.nn as nn
+
 import matplotlib.pyplot as plt
 import argparse
 from tqdm import tqdm
-import test
-import train
 
-# data 
-noisy_path = "./data/noisy_images"
-denoised_path = "./data/denoised_images"
-
-# load the dataset
 from data import OCRDataset
-dataset = OCRDataset(noisy_path, denoised_path)
-len_dataset = len(dataset)
-
-# get a random pair
-import random
-random_idx = random.randint(0, len_dataset)
-noisy, denoised = dataset[random_idx]
-
-# convert back to PIL
-noisy_pil = transforms.ToPILImage()(noisy)
-denoised_pil = transforms.ToPILImage()(denoised)
-
-# show images
-fig, axs = plt.subplots(1, 2)
-axs[0].imshow(noisy_pil, cmap='gray')
-axs[1].imshow(denoised_pil, cmap='gray')
-plt.savefig('./random_pair.png')
+from model import DenoisingCNN
+from train import train_epoch
+from test import test_epoch
 
 # write a function that plots the noisy, denoised, and predicted images of this model
 # w/ plt
@@ -57,7 +40,7 @@ def main():
     args = parse_args()
 
     # initialize the GPU
-    device = torch.device("cuda" if torch.cuda_is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load all the data, split, and load into a DataLoader
     dataset = OCRDataset(args.noisy_path, args.denoised_path)
@@ -76,7 +59,7 @@ def main():
 
     # train the model for N epochs, test after each
     epoch_losses = []
-    for epoch in tqdm(range(1, epochs + 1)):
+    for epoch in tqdm(range(1, args.epochs + 1)):
         # train the model
         train_loss = train_epoch(device, model, train_dataloader, optimizer, criterion)
 
@@ -97,3 +80,6 @@ def main():
 
 
     # START HERE: RUN THE CODE
+
+if __name__ == "__main__":
+    main()

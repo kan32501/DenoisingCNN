@@ -4,6 +4,8 @@
 import os
 import matplotlib.pyplot as plt
 import PIL.Image as Image
+import random
+from tqdm import tqdm
 
 # PyTorch 
 import torch
@@ -35,7 +37,7 @@ class OCRDataset(Dataset):
         # load & standardize each pair of images
         self.noisy_images = []
         self.denoised_images = []
-        for i in range(len(raw_noisy_images)):
+        for i in tqdm(range(len(raw_noisy_images)), desc="Loading dataset"):
             # load image
             noisy = Image.open(raw_noisy_images[i])
             denoised = Image.open(raw_denoised_images[i])
@@ -49,3 +51,20 @@ class OCRDataset(Dataset):
 
     def __getitem__(self, idx):
         return (self.noisy_images[idx], self.denoised_images[idx])
+
+# get a random pair from the dataset
+def random_pair(dataset, out_path="./random_pair.png"):
+    # get a random index
+    len_dataset = len(dataset)
+    random_idx = random.randint(0, len_dataset)
+    noisy, denoised = dataset[random_idx]
+
+    # convert back to PIL
+    noisy_pil = transforms.ToPILImage()(noisy)
+    denoised_pil = transforms.ToPILImage()(denoised)
+
+    # show images
+    fig, axs = plt.subplots(1, 2)
+    axs[0].imshow(noisy_pil, cmap='gray')
+    axs[1].imshow(denoised_pil, cmap='gray')
+    plt.savefig(out_path)

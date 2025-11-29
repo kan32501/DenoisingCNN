@@ -5,7 +5,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 class DenoisingCNN(nn.Module):
-    def __init__(self,  num_layers, channels=1):
+    def __init__(self, num_layers, channels=1):
         super(DenoisingCNN, self).__init__()
         # define the layers in this function. taken from https://arxiv.org/pdf/1608.03981
         self.num_layers = num_layers
@@ -19,7 +19,7 @@ class DenoisingCNN(nn.Module):
         )
         
         # middle layers
-        self.middle_layers = []
+        layers = []
         for i in range(self.num_layers - 2):
             middle_layer = nn.Sequential(
                 nn.Conv2d(in_channels=self.features, out_channels=self.features, kernel_size=3, stride=1, padding=1),
@@ -28,8 +28,9 @@ class DenoisingCNN(nn.Module):
             )
 
             # add to the network
-            self.middle_layers.append(middle_layer)
-
+            layers.append(middle_layer)
+        self.middle_layers = nn.Sequential(*nn.ModuleList(layers))
+        
         # last layers
         self.conv_final = nn.Sequential(
             nn.Conv2d(in_channels=self.features, out_channels=channels, kernel_size=3, stride=1, padding=1)
@@ -38,7 +39,7 @@ class DenoisingCNN(nn.Module):
         # combine all layers to create the network
         self.layers = nn.Sequential(
             self.conv_1,
-            nn.ModuleList(self.middle_layers),
+            self.middle_layers,
             self.conv_final
         )
 

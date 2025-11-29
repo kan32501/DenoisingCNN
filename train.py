@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 from data import OCRDataset
-from torch import DataLoader
+from torch.utils.data import DataLoader
 
 # train the model over one epochs
 def train_epoch(device, model, dataloader, optimizer, criterion):
@@ -15,7 +15,7 @@ def train_epoch(device, model, dataloader, optimizer, criterion):
     # run the model on each batch
     for batch_no, (noisy, denoised) in enumerate(dataloader):
         # send inputs to GPU for faster computation
-        noisy, denoised = noisy.to(device), denoise.to(device)
+        noisy, denoised = noisy.to(device), denoised.to(device)
 
         # clear the gradients from the last batch
         optimizer.zero_grad()
@@ -33,7 +33,7 @@ def train_epoch(device, model, dataloader, optimizer, criterion):
         loss.backward()
 
         # update the model weights
-        optimzer.step()
+        optimizer.step()
 
     # normalize the total loss by the number of batches we had
     train_loss = total_loss / len(dataloader)
