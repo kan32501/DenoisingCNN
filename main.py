@@ -8,6 +8,16 @@ import matplotlib.pyplot as plt
 import argparse
 from tqdm import tqdm
 
+<<<<<<< HEAD
+=======
+# some inspiration from https://github.com/SaoYan/DnCNN-PyTorch
+
+# data 
+noisy_path = "./data/noisy_images"
+denoised_path = "./data/denoised_images"
+
+# load the dataset
+>>>>>>> 49ea01ef4cc2ee70c3ba2f113025c1a3b1083443
 from data import OCRDataset
 from model import DenoisingCNN
 from train import train_epoch
@@ -80,6 +90,9 @@ def main():
 
 
     # START HERE: RUN THE CODE
+<<<<<<< HEAD
 
 if __name__ == "__main__":
     main()
+=======
+>>>>>>> 49ea01ef4cc2ee70c3ba2f113025c1a3b1083443
