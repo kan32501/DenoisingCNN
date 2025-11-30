@@ -42,6 +42,9 @@ class OCRDataset(Dataset):
             noisy = Image.open(raw_noisy_images[i])
             denoised = Image.open(raw_denoised_images[i])
 
+            # set original image size
+            if i == 0: self.original_size = noisy.size
+
             # preprocess image
             self.noisy_images.append(self.transform(noisy))
             self.denoised_images.append(self.transform(denoised))
@@ -52,19 +55,45 @@ class OCRDataset(Dataset):
     def __getitem__(self, idx):
         return (self.noisy_images[idx], self.denoised_images[idx])
 
-# get a random pair from the dataset
-def random_pair(dataset, out_path="./random_pair.png"):
-    # get a random index
+    # assumes 128x128 tensor input
+    def reconstruct_image(self, tensor):
+        # resize back to the original size
+        self.un_transform = transforms.Compose([
+            transforms.Resize((self.original_size[1], self.original_size[0])),
+            transforms.ToPILImage()
+        ])
+
+        # bring it off the GPU
+        reconstructed = self.un_transform(tensor).cpu().detach() if tensor.is_cuda else self.un_transform(tensor)
+
+        return reconstructed
+
+# get 5 random pairs from the dataset
+def random_pairs(dataset, num_pairs=5):
+    # get random indices
     len_dataset = len(dataset)
-    random_idx = random.randint(0, len_dataset)
-    noisy, denoised = dataset[random_idx]
+    random_idxs = random.sample(range(len_dataset), num_pairs)
+    random_pairs = [dataset[idx] for idx in random_idxs]
 
     # convert back to PIL
-    noisy_pil = transforms.ToPILImage()(noisy)
-    denoised_pil = transforms.ToPILImage()(denoised)
+    noisys_pil = [dataset.reconstruct_image(pair[0]) for pair in random_pairs]
+    denoiseds_pil = [dataset.reconstruct_image(pair[1]) for pair in random_pairs]
 
-    # show images
-    fig, axs = plt.subplots(1, 2)
-    axs[0].imshow(noisy_pil, cmap='gray')
-    axs[1].imshow(denoised_pil, cmap='gray')
+    return noisys_pil, denoiseds_pil
+
+# plot images
+def plot_images(noisy_images, denoised_images, out_path):
+    # get number of pairs
+    num_pairs = len(noisy_images)
+
+    # plot pair
+    fig, axs = plt.subplots(num_pairs, 2, figsize=(2 * 3, num_pairs * 3))
+    for pair in range(num_pairs):
+        axs[pair, 0].imshow(noisy_images[pair], interpolation='nearest', cmap='gray', aspect='equal')
+        axs[pair, 1].imshow(denoised_images[pair], interpolation='nearest', cmap='gray', aspect='equal')
+
+    for ax in axs.flat:
+        ax.axis("off")  # hide ticks for cleaner images
+
+    # save
     plt.savefig(out_path)
