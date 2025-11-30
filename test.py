@@ -18,14 +18,14 @@ def test_epoch(device, model, dataloader, criterion):
         for batch_no, (noisy, denoised) in enumerate(dataloader):
             # send tensors to GPU
             noisy, denoised = noisy.to(device), denoised.to(device)
+            batch_size = noisy.size()[0]
 
             # get model prediction
-            pred_denoised = model(noisy)
+            pred = model(noisy)
 
             # calculate and accumulate the loss (https://arxiv.org/pdf/1608.03981)
-            gt_noise = denoised - noisy
-            pred_noise = pred_denoised - noisy
-            loss = criterion(gt_noise, pred_noise)
+            # gt_noise = noisy - denoised
+            loss = criterion(denoised, pred)
             total_loss += loss 
 
     # normalize the loss with the number of batches

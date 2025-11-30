@@ -14,14 +14,15 @@ from model import DenoisingCNN
 from train import train_epoch
 from test import test_epoch
 
+# enter parameters of model training
 def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--noisy_path', type=str, default="./data/noisy_images")
     parser.add_argument('--denoised_path', type=str, default="./data/denoised_images")
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--learning_rate', type=float, default=0.001)
+    parser.add_argument('--learning_rate', type=float, default=1e-1)
     parser.add_argument('--train_test_split', type=float, default=0.9) # we don't have that much data
     parser.add_argument('--num_layers', type=int, default=17)
     parser.add_argument('--visualize', type=bool, default=True)
@@ -38,26 +39,38 @@ def visualize_prediction(device, model, test_dataset, reconstruct_fn, samples=3,
     random_test_pairs = [test_dataset[idx] for idx in random_idxs]
 
     # initialize plot
-    fig, axs = plt.subplots(samples, 3, figsize=(3 * 3, samples * 3))
+    fig, axs = plt.subplots(3, samples, figsize=(samples * 3, 3 * 3))
+
+    # label axes
+    titles = ["Noisy", "Denoised GT", "Denoised Prediction"]
+    for i, ax in enumerate(axs[0]):
+        ax.set_title(titles[i])
 
     # run the prediction and visualize
     for i in range(len(random_test_pairs)):
+        # get input pair
         noisy = random_test_pairs[i][0]
         denoised = random_test_pairs[i][1]
-        prediction = model(noisy.unsqueeze(0).to(device)).squeeze(0).cpu().detach()
+
+        # run prediction
+        model.eval()
+        noise_prediction = model(noisy.unsqueeze(0).to(device)).squeeze(0).cpu().detach()
+        # denoised_prediction = noisy - noise_prediction
+        denoised_prediction = noise_prediction
 
         # reconstruct each image
         noisy_PIL = reconstruct_fn(noisy)
         denoised_PIL = reconstruct_fn(denoised)
-        prediction_PIL = reconstruct_fn(prediction)
+        prediction_PIL = reconstruct_fn(denoised_prediction)
 
         # plot
         axs[i, 0].imshow(noisy_PIL, interpolation='nearest', cmap='gray', aspect='equal')
         axs[i, 1].imshow(denoised_PIL, interpolation='nearest', cmap='gray', aspect='equal')
         axs[i, 2].imshow(prediction_PIL, interpolation='nearest', cmap='gray', aspect='equal')
 
+    # hide ticks for cleaner images
     for ax in axs.flat:
-        ax.axis("off")  # hide ticks for cleaner images
+        ax.axis("off") 
 
     plt.savefig(out_path)
 
@@ -65,6 +78,10 @@ def visualize_prediction(device, model, test_dataset, reconstruct_fn, samples=3,
 def visualize_loss(losses, out_path="./losses.png"):
     # create plot
     fig, axs = plt.subplots(1, 2)
+
+    # label column
+    axs[0].set_title("Training Loss")
+    axs[1].set_title("Test Loss")
 
     # plot both training and test losses
     x = [i for i in range(1, len(losses) + 1)]
@@ -74,8 +91,6 @@ def visualize_loss(losses, out_path="./losses.png"):
     axs[1].plot(x, test_losses)
 
     plt.savefig(out_path)
-
-
 
 # specify 
 def main():
@@ -123,8 +138,8 @@ def main():
             f"TESTING LOSS: {test_loss:.5f} "
         )
 
-        # visualize losses
-        visualize_loss(epoch_losses)
+    # visualize losses
+    visualize_loss(epoch_losses)
 
     # visualize 3 predictions with trained model
     visualize_prediction(device, model, test_dataset, dataset.reconstruct_image)

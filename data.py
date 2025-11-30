@@ -19,6 +19,7 @@ class OCRDataset(Dataset):
         # initialize base attributes
         self.noisy_path = noisy_path
         self.denoised_path = denoised_path
+        self.image_size = 128
 
         # get each item. sort them so the pairs are always aligned
         raw_noisy_images = sorted([os.path.join(self.noisy_path, file) for file in os.listdir(self.noisy_path)])
@@ -42,8 +43,8 @@ class OCRDataset(Dataset):
             noisy = Image.open(raw_noisy_images[i])
             denoised = Image.open(raw_denoised_images[i])
 
-            # set original image size
-            if i == 0: self.original_size = noisy.size
+            # # set original image size
+            # if i == 0: self.original_size = noisy.size
 
             # preprocess image
             self.noisy_images.append(self.transform(noisy))
@@ -59,7 +60,7 @@ class OCRDataset(Dataset):
     def reconstruct_image(self, tensor):
         # resize back to the original size
         self.un_transform = transforms.Compose([
-            transforms.Resize((self.original_size[1], self.original_size[0])),
+            transforms.Resize((self.image_size, self.image_size)),
             transforms.ToPILImage()
         ])
 

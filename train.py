@@ -16,17 +16,17 @@ def train_epoch(device, model, dataloader, optimizer, criterion):
     for batch_no, (noisy, denoised) in enumerate(dataloader):
         # send inputs to GPU for faster computation
         noisy, denoised = noisy.to(device), denoised.to(device)
+        batch_size = noisy.size()[0]
 
         # clear the gradients from the last batch
         optimizer.zero_grad()
 
         # do the forward pass
-        pred_denoised = model(noisy)
+        pred = model(noisy)
 
         # calculate and accumulate the loss (https://arxiv.org/pdf/1608.03981)
-        gt_noise = denoised - noisy
-        pred_noise = pred_denoised - noisy
-        loss = criterion(gt_noise, pred_noise)
+        # gt_noise = noisy - denoised
+        loss = criterion(denoised, pred)
         total_loss += loss 
 
         # compute all the gradients for back propagation
