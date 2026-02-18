@@ -24,8 +24,9 @@ def test_epoch(device, model, dataloader, criterion):
             pred = model(noisy)
 
             # calculate and accumulate the loss (https://arxiv.org/pdf/1608.03981)
-            # gt_noise = noisy - denoised
-            loss = criterion(denoised, pred)
+            gt_noise = noisy - denoised
+            loss = criterion(gt_noise, pred)
+            # loss = criterion(denoised, pred) # if we are directly predicting the denoised image
             total_loss += loss 
 
     # normalize the loss with the number of batches

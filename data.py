@@ -19,7 +19,8 @@ class OCRDataset(Dataset):
         # initialize base attributes
         self.noisy_path = noisy_path
         self.denoised_path = denoised_path
-        self.image_size = 128
+        # self.image_size = 128
+        self.image_size = 420
 
         # get each item. sort them so the pairs are always aligned
         raw_noisy_images = sorted([os.path.join(self.noisy_path, file) for file in os.listdir(self.noisy_path)])
@@ -29,9 +30,9 @@ class OCRDataset(Dataset):
         if len(raw_noisy_images) != len(raw_denoised_images):
             raise valueError("Unequal number of noisy and denoised images")
 
-        # set the standard transformation them to be 128 x 128 tensor
+        # set the standard transformation to be 128 x 128 tensor
         self.transform = transforms.Compose([
-            transforms.Resize((128, 128)),
+            transforms.Resize((256, 256)),
             transforms.ToTensor()
         ])
 

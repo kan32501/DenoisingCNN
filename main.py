@@ -55,8 +55,7 @@ def visualize_prediction(device, model, test_dataset, reconstruct_fn, samples=3,
         # run prediction
         model.eval()
         noise_prediction = model(noisy.unsqueeze(0).to(device)).squeeze(0).cpu().detach()
-        # denoised_prediction = noisy - noise_prediction
-        denoised_prediction = noise_prediction
+        denoised_prediction = torch.clamp(noisy - noise_prediction, min=0.0, max=1.0)
 
         # reconstruct each image
         noisy_PIL = reconstruct_fn(noisy)

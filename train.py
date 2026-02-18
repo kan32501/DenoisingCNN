@@ -25,8 +25,9 @@ def train_epoch(device, model, dataloader, optimizer, criterion):
         pred = model(noisy)
 
         # calculate and accumulate the loss (https://arxiv.org/pdf/1608.03981)
-        # gt_noise = noisy - denoised
-        loss = criterion(denoised, pred)
+        gt_noise = noisy - denoised
+        loss = criterion(gt_noise, pred)
+        # loss = criterion(denoised, pred)
         total_loss += loss 
 
         # compute all the gradients for back propagation
